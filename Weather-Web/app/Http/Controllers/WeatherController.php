@@ -20,12 +20,36 @@ class WeatherController extends Controller
     public function current(Request $request)
     {
         $user = Auth::user();
-        $lat = $request->get('lat') ?? ($user->latitude ?? 6.2088);
-        $lon = $request->get('lon') ?? ($user->longitude ?? 106.8456);
-        $location = $request->get('location', $user->current_location ?? 'Bogor');
+        
+        // Check if coordinates are provided in the request
+        $lat = $request->get('lat');
+        $lon = $request->get('lon');
+        $location = $request->get('location');
+        
+        // If no coordinates provided, check if user has saved location
+        if (!$lat || !$lon) {
+            $lat = $user->latitude;
+            $lon = $user->longitude;
+            $location = $user->current_location;
+        }
+        
+        // If still no coordinates, return view with geolocation prompt
+        if (!$lat || !$lon) {
+            return view('weather.current', [
+                'weather' => null,
+                'alerts' => [],
+                'location' => null,
+                'needsLocation' => true
+            ]);
+        }
 
         $weather = $this->weatherService->getCurrentWeather($lat, $lon);
         $alerts = $this->weatherService->getWeatherAlerts($lat, $lon);
+
+        // If no location name provided, get it from weather API response
+        if (!$location && isset($weather['name'])) {
+            $location = $weather['name'];
+        }
 
         // Create a unique key for this search
         $searchKey = md5($user->id . $lat . $lon . $location);
@@ -90,5 +114,19 @@ class WeatherController extends Controller
         $history = $user->weatherHistory()->orderBy('searched_at', 'desc')->paginate(20);
 
         return view('weather.history', compact('history'));
+    }
+    
+    // Add this method to save user's location
+    public function saveLocation(Request $request)
+    {
+        $user = Auth::user();
+        
+        $user->update([
+            'latitude' => $request->lat,
+            'longitude' => $request->lon,
+            'current_location' => $request->location
+        ]);
+        
+        return response()->json(['success' => true]);
     }
 }

@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/forecast', [WeatherController::class, 'forecast'])->name('weather.forecast');
     Route::get('/history', [WeatherController::class, 'history'])->name('weather.history');
     Route::get('/search', [WeatherController::class, 'search'])->name('weather.search');
+    Route::post('/save-location', [WeatherController::class, 'saveLocation'])->name('weather.save-location');
     
     // Nickname locations
     Route::get('/nicknames', [NicknameLocationController::class, 'index'])->name('nicknames.index');
@@ -31,5 +32,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/nicknames/{nickname}', [NicknameLocationController::class, 'destroy'])->name('nicknames.destroy');
     // Add this route for getting weather data for nickname locations
     Route::get('/nicknames/{nickname}/weather', [NicknameLocationController::class, 'getWeather'])->name('nicknames.weather');
-
 });
