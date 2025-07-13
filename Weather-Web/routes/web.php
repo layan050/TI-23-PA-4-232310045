@@ -32,4 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/nicknames/{nickname}', [NicknameLocationController::class, 'destroy'])->name('nicknames.destroy');
     // Add this route for getting weather data for nickname locations
     Route::get('/nicknames/{nickname}/weather', [NicknameLocationController::class, 'getWeather'])->name('nicknames.weather');
+
+    // In your web.php routes file
+Route::get('/clear-saved-location', [WeatherController::class, 'clearSavedLocation'])->name('weather.clear-saved');
+
 });
